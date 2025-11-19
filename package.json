@@ -1,0 +1,35 @@
+{
+  "name": "patibot",
+  "version": "1.0.0",
+  "description": "Sokak hayvanı saldırılarını Twitter'dan otomatik toplayan ve analiz eden bot",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "init-db": "node src/database/init.js",
+    "test-authorities": "node src/utils/testAuthorities.js",
+    "report": "node src/commands/generateReport.js"
+  },
+  "keywords": [
+    "twitter",
+    "bot",
+    "ai",
+    "gemini",
+    "sokak-hayvanlari"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@google/generative-ai": "^0.2.1",
+    "better-sqlite3": "^9.2.2",
+    "dotenv": "^16.3.1",
+    "node-cron": "^3.0.3",
+    "playwright": "^1.40.1",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
+
