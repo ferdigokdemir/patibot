@@ -1,0 +1,86 @@
+{
+  "inputs": [
+    {
+      "index": 0,
+      "tagName": "DIV",
+      "testId": "tweetTextarea_0",
+      "role": "textbox",
+      "contentEditable": "true",
+      "placeholder": "Post text",
+      "className": "notranslate public-DraftEditor-content"
+    }
+  ],
+  "buttons": [
+    {
+      "index": 7,
+      "testId": "tweetButtonInline",
+      "text": "Post",
+      "ariaLabel": null,
+      "disabled": true
+    },
+    {
+      "index": 10,
+      "testId": "retweet",
+      "text": "5",
+      "ariaLabel": "5 reposts. Repost",
+      "disabled": false
+    },
+    {
+      "index": 15,
+      "testId": "retweet",
+      "text": "16",
+      "ariaLabel": "16 reposts. Repost",
+      "disabled": false
+    },
+    {
+      "index": 20,
+      "testId": "retweet",
+      "text": "319",
+      "ariaLabel": "319 reposts. Repost",
+      "disabled": false
+    },
+    {
+      "index": 25,
+      "testId": "retweet",
+      "text": "14",
+      "ariaLabel": "14 reposts. Repost",
+      "disabled": false
+    },
+    {
+      "index": 30,
+      "testId": "retweet",
+      "text": "48",
+      "ariaLabel": "48 reposts. Repost",
+      "disabled": false
+    },
+    {
+      "index": 34,
+      "testId": "tweet-text-show-more-link",
+      "text": "Show more",
+      "ariaLabel": null,
+      "disabled": false
+    },
+    {
+      "index": 36,
+      "testId": "retweet",
+      "text": "113",
+      "ariaLabel": "113 reposts. Repost",
+      "disabled": false
+    }
+  ],
+  "textareas": [],
+  "tweetTestIds": [
+    "SideNav_NewTweet_Button",
+    "tweetTextarea_0_label",
+    "tweetTextarea_0RichTextInputContainer",
+    "tweetTextarea_0",
+    "tweetButtonInline",
+    "tweet",
+    "Tweet-User-Avatar",
+    "tweetText",
+    "tweetPhoto",
+    "app-text-transition-container",
+    "retweet",
+    "tweet-text-show-more-link"
+  ]
+}

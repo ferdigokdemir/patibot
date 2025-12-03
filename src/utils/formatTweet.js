@@ -20,7 +20,10 @@ export function formatIncidentTweet(incident, authorities = [], sourceTweetUrl =
   // Tarih
   if (incident.incident_date) {
     const date = new Date(incident.incident_date);
-    tweet += `📅 ${date.toLocaleDateString('tr-TR')} ${date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}\n`;
+    // Geçerli tarih kontrolü
+    if (!isNaN(date.getTime())) {
+      tweet += `📅 ${date.toLocaleDateString('tr-TR')} ${date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}\n`;
+    }
   }
   
   tweet += `\n`;
@@ -31,28 +34,29 @@ export function formatIncidentTweet(incident, authorities = [], sourceTweetUrl =
   
   // Konum linki
   if (incident.latitude && incident.longitude) {
-    tweet += `🗺️ https://maps.google.com/?q=${incident.latitude},${incident.longitude}\n\n`;
+    tweet += `🗺️ https://maps.google.com/?q=${incident.latitude},${incident.longitude}\n`;
   }
-  
-  // Kaynak tweet linki
-  if (sourceTweetUrl) {
-    tweet += `🔗 Kaynak: ${sourceTweetUrl}\n\n`;
-  }
-  
-  // Yetkilileri etiketle
-  if (authorities && authorities.length > 0) {
-    tweet += authorities.join(' ') + '\n\n';
-  }
-  
-  // Hashtag'ler
-  tweet += `#SokakHayvanları #CİMER #PatiBot`;
   
   // CİMER raporu ekle (Premium ile 4000 karakter)
   if (cimerReport) {
-    tweet += `\n\n${'─'.repeat(30)}\n\n`;
-    tweet += `📋 CİMER ŞİKAYET METNİ:\n\n`;
+    tweet += `${'─'.repeat(30)}\n`;
+    tweet += `📋 CİMER DİLEKÇESİ:\n`;
     tweet += cimerReport;
+    tweet += `\n${'─'.repeat(30)}\n`;
   }
+  
+  // Kaynak tweet linki (CİMER'den sonra)
+  if (sourceTweetUrl) {
+    tweet += `🔗 Kaynak: ${sourceTweetUrl}\n`;
+  }
+  
+  // Yetkilileri etiketle (en altta)
+  if (authorities && authorities.length > 0) {
+    tweet += authorities.join(' ') + '\n';
+  }
+  
+  // Hashtag'ler (en sonda)
+  tweet += `#SokakHayvanları #CİMER #PatiBot`;
   
   // 4000 karakter kontrolü
   if (tweet.length > MAX_TWEET_LENGTH) {
@@ -66,4 +70,3 @@ export function formatIncidentTweet(incident, authorities = [], sourceTweetUrl =
   
   return tweet;
 }
-
