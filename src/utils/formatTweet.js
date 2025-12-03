@@ -1,12 +1,18 @@
 /**
  * Tweet formatlamak için utility fonksiyon
+ * Twitter Premium: 4000 karakter limiti
  */
-export function formatIncidentTweet(incident, authorities = [], sourceTweetUrl = null) {
+export function formatIncidentTweet(incident, authorities = [], sourceTweetUrl = null, cimerReport = null) {
+  // Twitter Premium - 4000 karakter limiti
+  const MAX_TWEET_LENGTH = 4000;
+  
   let tweet = `🚨 Sokak Hayvanı Saldırı Bildirimi\n\n`;
   
   // Konum bilgisi
   if (incident.city && incident.district) {
     tweet += `📍 ${incident.city} / ${incident.district}\n`;
+  } else if (incident.city) {
+    tweet += `📍 ${incident.city}\n`;
   } else if (incident.location) {
     tweet += `📍 ${incident.location}\n`;
   }
@@ -19,12 +25,8 @@ export function formatIncidentTweet(incident, authorities = [], sourceTweetUrl =
   
   tweet += `\n`;
   
-  // Açıklama (kısaltılmış)
-  let description = incident.description;
-  const maxDescLength = authorities.length > 0 ? 80 : 120;
-  if (description.length > maxDescLength) {
-    description = description.substring(0, maxDescLength) + '...';
-  }
+  // Açıklama (tam)
+  let description = incident.description || '';
   tweet += `${description}\n\n`;
   
   // Konum linki
@@ -34,7 +36,7 @@ export function formatIncidentTweet(incident, authorities = [], sourceTweetUrl =
   
   // Kaynak tweet linki
   if (sourceTweetUrl) {
-    tweet += `🔗 ${sourceTweetUrl}\n\n`;
+    tweet += `🔗 Kaynak: ${sourceTweetUrl}\n\n`;
   }
   
   // Yetkilileri etiketle
@@ -45,24 +47,21 @@ export function formatIncidentTweet(incident, authorities = [], sourceTweetUrl =
   // Hashtag'ler
   tweet += `#SokakHayvanları #CİMER #PatiBot`;
   
-  // 280 karakter kontrolü
-  if (tweet.length > 280) {
-    // Daha da kısalt
-    description = incident.description.substring(0, 50) + '...';
-    tweet = `🚨 Sokak Hayvanı Saldırısı\n\n`;
-    if (incident.city) {
-      tweet += `📍 ${incident.city}`;
-      if (incident.district) tweet += ` / ${incident.district}`;
-      tweet += `\n\n`;
+  // CİMER raporu ekle (Premium ile 4000 karakter)
+  if (cimerReport) {
+    tweet += `\n\n${'─'.repeat(30)}\n\n`;
+    tweet += `📋 CİMER ŞİKAYET METNİ:\n\n`;
+    tweet += cimerReport;
+  }
+  
+  // 4000 karakter kontrolü
+  if (tweet.length > MAX_TWEET_LENGTH) {
+    // CİMER raporunu kısalt
+    const availableForCimer = MAX_TWEET_LENGTH - (tweet.length - (cimerReport?.length || 0)) - 50;
+    if (cimerReport && availableForCimer > 200) {
+      const truncatedCimer = cimerReport.substring(0, availableForCimer) + '...';
+      tweet = tweet.replace(cimerReport, truncatedCimer);
     }
-    tweet += `${description}\n\n`;
-    
-    // Yetkililer (kısaltılmış)
-    if (authorities && authorities.length > 0) {
-      tweet += authorities.slice(0, 2).join(' ') + '\n\n';
-    }
-    
-    tweet += `#PatiBot #SokakHayvanları`;
   }
   
   return tweet;

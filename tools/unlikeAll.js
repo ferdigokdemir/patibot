@@ -151,7 +151,7 @@ class TwitterUnliker {
         await this.page.evaluate(() => window.scrollBy(0, 300));
         await this.page.waitForTimeout(1000);
 
-        // Like butonunu bul ve tıkla
+        // Like butonunu bul - önce like yap sonra unlike (bug fix)
         const unlikeSuccess = await this.page.evaluate(() => {
           // Tüm like butonlarını bul (liked olan = kırmızı/pembe)
           const likeButtons = document.querySelectorAll('button[data-testid="unlike"]');
@@ -161,12 +161,25 @@ class TwitterUnliker {
           // İlk liked butonu bul ve tıkla
           const firstLikeBtn = likeButtons[0];
           if (firstLikeBtn) {
+            // Önce like yap (bug fix için)
             firstLikeBtn.click();
             return true;
           }
           
           return false;
         });
+
+        if (unlikeSuccess) {
+          // Like yapıldı, şimdi unlike yap
+          await this.page.waitForTimeout(500);
+          
+          await this.page.evaluate(() => {
+            const likeButtons = document.querySelectorAll('button[data-testid="like"]');
+            if (likeButtons.length > 0) {
+              likeButtons[0].click();
+            }
+          });
+        }
 
         if (!unlikeSuccess) {
           console.log('⚠️  Daha fazla beğenilmiş tweet bulunamadı');
@@ -180,12 +193,14 @@ class TwitterUnliker {
           continue;
         }
 
-        this.unlikedCount++;
-        consecutiveFailures = 0; // Başarılı olunca sıfırla
-        console.log(`   💔 Like geri alındı (${this.unlikedCount}/${maxUnlikes})`);
-        
-        // Rate limit'e yakalanmamak için bekleme
-        await this.page.waitForTimeout(1500);
+        if (unlikeSuccess) {
+          this.unlikedCount++;
+          consecutiveFailures = 0; // Başarılı olunca sıfırla
+          console.log(`   💔 Like geri alındı (${this.unlikedCount}/${maxUnlikes})`);
+          
+          // Rate limit'e yakalanmamak için bekleme
+          await this.page.waitForTimeout(1000);
+        }
 
         attemptCount++;
 

@@ -1,4 +1,5 @@
 import twitterScraper from './services/twitterScraper.js';
+import twitterPoster from './services/twitterPoster.js';
 import geminiService from './services/geminiService.js';
 import cimerService from './services/cimerService.js';
 import { getRelevantAuthorities, getAuthoritiesText } from './data/authorities.js';
@@ -257,37 +258,73 @@ class PatiBotCore {
           
           console.log(`\n🏛️  İlgili Yetkililer: ${authorities.join(', ')}`);
           
-          // 3. Twitter tweet formatı oluştur
-          const tweetContent = formatIncidentTweet(incident, authorities, sourceTweetUrl);
+          // 3. Twitter tweet formatı oluştur (CİMER raporu dahil - Premium 4000 karakter)
+          // CİMER raporunu string olarak hazırla
+          const cimerReportText = cimerPackage.report 
+            ? `BAŞLIK: ${cimerPackage.report.baslik || ''}\n\nKATEGORİ: ${cimerPackage.report.kategori || ''}\n\nAÇIKLAMA:\n${cimerPackage.report.aciklama || ''}`
+            : null;
+          const tweetContent = formatIncidentTweet(incident, authorities, sourceTweetUrl, cimerReportText);
           
           // Raporları göster
           console.log('\n' + '═'.repeat(60));
-          console.log('📱 TWITTER PAYLAŞIM İÇERİĞİ:');
+          console.log('📱 TWITTER PAYLAŞIM İÇERİĞİ (Premium - 4000 karakter):');
           console.log('═'.repeat(60));
           console.log(tweetContent);
+          console.log(`\n📊 Tweet uzunluğu: ${tweetContent.length} karakter`);
           console.log('═'.repeat(60));
           console.log(`\n👥 Etiketlenen Yetkililer: ${authoritiesText}`);
-          console.log('\n' + cimerPackage.formatted_text);
+          
+          // 4. Twitter'da paylaş
+          const autoPost = process.env.AUTO_POST_TWEETS !== 'false';
+          
+          if (autoPost) {
+            try {
+              console.log('\n📤 Twitter\'da paylaşılıyor...');
+              await twitterPoster.postTweet(tweetContent);
+              
+              // Incident'ı güncelle - başarıyla paylaşıldı
+              updateIncident(incident.id, {
+                twitter_posted: 1,
+                cimer_status: 'generated',
+                patibot_tweet_id: new Date().getTime().toString() // Geçici ID
+              });
+              
+              this.stats.tweets_posted++;
+              console.log(`\n✅ Olay #${incident.id} Twitter'da paylaşıldı!`);
+              
+            } catch (postError) {
+              console.error(`❌ Twitter paylaşım hatası: ${postError.message}`);
+              console.log(`💡 Tweet içeriği manuel paylaşım için yukarıda gösterildi.\n`);
+              
+              // Manuel paylaşım için hazır olarak işaretle
+              updateIncident(incident.id, {
+                twitter_posted: 0,
+                cimer_status: 'generated'
+              });
+              
+              this.stats.errors++;
+            }
+          } else {
+            // Otomatik paylaşım kapalı
+            updateIncident(incident.id, {
+              twitter_posted: 0,
+              cimer_status: 'generated'
+            });
+            
+            console.log(`\n💡 Olay #${incident.id} raporu hazır - Manuel olarak paylaşabilirsiniz!`);
+            console.log(`   AUTO_POST_TWEETS=true yaparak otomatik paylaşımı aktifleştirebilirsiniz.\n`);
+          }
           
           // Log'a kaydet
           logger.info('Olay raporu oluşturuldu', { 
             incident_id: incident.id, 
             tweet_content: tweetContent,
-            cimer_report: cimerPackage.report 
+            cimer_report: cimerPackage.report,
+            auto_posted: autoPost
           });
           
-          // Incident'ı güncelle
-          updateIncident(incident.id, {
-            twitter_posted: 1, // Manuel paylaşım için hazır
-            cimer_status: 'generated'
-          });
-          
-          this.stats.tweets_posted++;
-          console.log(`\n✅ Olay #${incident.id} raporu hazır - Manuel olarak paylaşabilirsiniz!`);
-          console.log(`💡 Tweet içeriği yukarıda gösterildi.\n`);
-          
-          // Rate limiting - AI için
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          // Rate limiting - API ve Twitter için
+          await new Promise(resolve => setTimeout(resolve, 5000));
           
         } catch (error) {
           console.error(`❌ Rapor oluşturma hatası (${incident.id}):`, error);
@@ -325,13 +362,17 @@ class PatiBotCore {
     };
     
     try {
-      // 1. Tweet toplama
+      // 1. Önce veritabanındaki paylaşılmamış olayları paylaş
+      console.log('📤 Önce veritabanındaki bekleyen olaylar paylaşılıyor...');
+      await this.postIncidents();
+      
+      // 2. Tweet toplama
       await this.collectTweets();
       
-      // 2. Analiz
+      // 3. Analiz
       await this.analyzeTweets();
       
-      // 3. Paylaşım
+      // 4. Yeni bulunan olayları paylaş
       await this.postIncidents();
       
       // İstatistikleri kaydet
@@ -350,8 +391,9 @@ class PatiBotCore {
       
       logger.info('Bot döngüsü tamamlandı', { stats: this.stats });
       
-      // Browser'ı kapat
+      // Browser'ları kapat
       await twitterScraper.close();
+      await twitterPoster.close();
       
     } catch (error) {
       console.error('\n❌ Döngü hatası:', error);

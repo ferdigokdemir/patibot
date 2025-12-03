@@ -4,7 +4,8 @@ Sokak hayvanı saldırılarını Twitter'dan **otomatik ve ücretsiz** olarak to
 
 ## 🎯 Özellikler
 
-- ✅ **Twitter Login + Scraping**: Playwright ile otomatik login ve tweet toplama
+- ✅ **Twitter Scraping (Nitter)**: Nitter kullanarak giriş yapmadan tweet toplama
+- 📤 **Otomatik Paylaşım**: Bulunan olayları Twitter'da otomatik paylaşabilir
 - 🤖 **Yapay Zeka Analizi**: Google Gemini AI ile tweet'leri analiz eder ve gerçek olayları tespit eder
 - 📍 **Konum Tespiti**: Tweet'lerden şehir, ilçe ve konum bilgisi çıkarır
 - 🏛️ **Otomatik Etiketleme**: İlgili belediye ve devlet kurumlarını otomatik etiketler
@@ -28,7 +29,7 @@ Sokak hayvanı saldırılarını Twitter'dan **otomatik ve ücretsiz** olarak to
 
 - Node.js 18+ 
 - Google Gemini API Key (ÜCRETSİZ)
-- Twitter Hesabı (tweet toplamak için)
+- Twitter Hesabı (otomatik paylaşım yapmak istiyorsanız - opsiyonel)
 
 ## 🚀 Kurulum
 
@@ -57,18 +58,6 @@ cp env.example .env
 
 \`.env\` dosyasını düzenleyin ve aşağıdaki bilgileri doldurun:
 
-#### Twitter Login Bilgileri
-
-Normal Twitter hesabınızın bilgileri:
-
-\`\`\`env
-TWITTER_USERNAME=kullanici_adiniz
-TWITTER_PASSWORD=sifreniz
-TWITTER_EMAIL=emailiniz@example.com  # 2FA varsa gerekli
-\`\`\`
-
-**Not:** Bot sadece tweet okuyacak, hiçbir şey paylaşmayacak.
-
 #### Google Gemini API Key (ZORUNLU - ÜCRETSİZ)
 
 1. [Google AI Studio](https://makersuite.google.com/app/apikey) adresine gidin
@@ -77,6 +66,21 @@ TWITTER_EMAIL=emailiniz@example.com  # 2FA varsa gerekli
 \`\`\`env
 GEMINI_API_KEY=your_gemini_api_key
 \`\`\`
+
+#### Twitter Paylaşım Bilgileri (OPSİYONEL)
+
+Bulunan olayları otomatik Twitter'da paylaşmak istiyorsanız:
+
+\`\`\`env
+PATIBOT_TWITTER_USERNAME=patibot_hesabiniz
+PATIBOT_TWITTER_PASSWORD=sifreniz
+PATIBOT_TWITTER_EMAIL=emailiniz@example.com
+
+# Otomatik paylaşımı aktifleştir
+AUTO_POST_TWEETS=true
+\`\`\`
+
+**Not:** Otomatik paylaşım kapalıysa (AUTO_POST_TWEETS=false), bot sadece rapor hazırlar ve konsola yazdırır.
 
 #### Bot Ayarları
 

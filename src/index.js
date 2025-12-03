@@ -45,7 +45,25 @@ function checkConfiguration() {
   }
 
   console.log('✅ Konfigürasyon kontrolü başarılı');
-  console.log('ℹ️  Nitter kullanılıyor - Twitter login gerekmez\n');
+  console.log('ℹ️  Nitter kullanılıyor - Twitter login gerekmez');
+  
+  // Tweet paylaşım kontrolü
+  const autoPost = process.env.AUTO_POST_TWEETS !== 'false';
+  if (autoPost) {
+    const posterRequired = ['PATIBOT_TWITTER_USERNAME', 'PATIBOT_TWITTER_PASSWORD'];
+    const posterMissing = posterRequired.filter(key => !process.env[key]);
+    
+    if (posterMissing.length > 0) {
+      console.warn('\n⚠️  Otomatik tweet paylaşımı için eksik bilgiler:');
+      posterMissing.forEach(key => console.warn(`   - ${key}`));
+      console.warn('   AUTO_POST_TWEETS=false yapılarak sadece rapor oluşturulacak.\n');
+      process.env.AUTO_POST_TWEETS = 'false';
+    } else {
+      console.log('📤 Otomatik tweet paylaşımı: AÇIK\n');
+    }
+  } else {
+    console.log('📝 Otomatik tweet paylaşımı: KAPALI (sadece rapor hazırlanacak)\n');
+  }
 }
 
 // Ana fonksiyon

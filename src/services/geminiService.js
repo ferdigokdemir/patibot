@@ -59,11 +59,11 @@ class GeminiService {
   }
 
   /**
-   * Tweet'in sokak hayvanı saldırısı ile ilgili olup olmadığını analiz et
+   * Tweet'in sokak hayvanı saldırısı veya şikayeti ile ilgili olup olmadığını analiz et
    */
   async analyzeTweet(tweetText) {
     const prompt = `
-Sen bir metin analiz asistanısın. Sana verilen tweet'in gerçek bir sokak hayvanı saldırısı olayı olup olmadığını analiz etmelisin.
+Sen bir metin analiz asistanısın. Sana verilen tweet'in sokak hayvanları (başıboş köpek/kedi) ile ilgili bir OLAY veya ŞİKAYET olup olmadığını analiz etmelisin.
 
 ÖNEMLİ: SADECE TÜRKİYE'DEKİ OLAYLARI KABUL ET. Eğer tweet Türkiye dışında bir olaydan bahsediyorsa, is_relevant: false döndür.
 
@@ -72,17 +72,24 @@ Tweet:
 
 Lütfen aşağıdaki kriterlere göre analiz yap:
 
-1. Bu tweet TÜRKİYE'deki gerçek bir sokak hayvanı saldırısı/tehlikesi hakkında mı?
+1. Bu tweet TÜRKİYE'deki gerçek bir sokak hayvanı ile ilgili mi? Aşağıdaki durumları KABUL ET:
+   - Sokak hayvanı saldırısı (köpek/kedi)
+   - Başıboş köpek/kedi şikayeti
+   - Marketlerde, AVM'lerde, parklarda, okullarda başıboş hayvan sorunu
+   - Sokak hayvanı istilası/yoğunluğu
+   - Sahipsiz hayvanların tehlike oluşturması
+   - Vatandaşların sokak hayvanlarından şikayeti
+   
 2. Eğer başka bir ülkeden bahsediyorsa REDDET (is_relevant: false)
-3. Sadece haber, yorum veya genel konuşma mı?
-4. Şikayet/mizah/ironi içeriyor mu?
-5. Eğer Türkiye'de gerçek bir olay ise, aşağıdaki bilgileri çıkar:
-   - Konum (şehir, ilçe, mahalle, sokak)
+3. Sadece genel yorum, haber analizi veya politik görüş mü? (Bunları reddet)
+4. Eğer gerçek bir olay/şikayet ise, aşağıdaki bilgileri çıkar:
+   - Konum (şehir, ilçe, mahalle, sokak, mekan adı)
    - Olay tarihi ve saati (varsa)
    - Hayvan türü ve sayısı
-   - Olay açıklaması
+   - Olay/şikayet açıklaması
    - Yaralı/mağdur bilgisi (varsa)
    - Olayın ciddiyeti (düşük/orta/yüksek)
+   - Olay türü (saldırı/şikayet/tehlike)
 
 Cevabını SADECE aşağıdaki JSON formatında ver, başka açıklama ekleme:
 
@@ -91,10 +98,12 @@ Cevabını SADECE aşağıdaki JSON formatında ver, başka açıklama ekleme:
   "is_real_incident": true/false,
   "confidence": 0-100 arası sayı,
   "reason": "kısa açıklama",
+  "incident_type": "attack/complaint/danger/other",
   "incident_details": {
     "location": "konum bilgisi veya null",
     "city": "şehir veya null",
     "district": "ilçe veya null",
+    "place_name": "mekan adı (market, AVM, okul vs) veya null",
     "incident_date": "tarih veya null",
     "animal_type": "köpek/kedi/diğer veya null",
     "animal_count": sayı veya null,
